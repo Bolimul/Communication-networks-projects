@@ -1,0 +1,43 @@
+import socket
+import threading
+import random
+
+servers = [4000,4200,4400, 4600,4800]
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+
+
+
+
+def accept_connection():
+    while True:
+        client_socket, client_address = sock.accept()
+        data = client_socket.recv(1024)
+        print(data.decode())
+        client_socket.send('World'.encode())
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #sock.bind(('127.0.0.1', 10000))
+
+def sending_data(socket_send):
+    socket_send.send('Hello'.encode())
+    data = socket_send.recv(1024)
+    print(data.decode())
+    socket_send.close()
+
+choice = int(input('Enter server index:'))
+sock.bind(('127.0.0.1',servers[choice-1]))
+sock.listen(1)
+
+threading.Thread(target=accept_connection, args=()).start()
+for server in servers:
+    if server is not servers[choice-1]:
+        socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+        socket1.bind(('127.0.0.1', random.randint(5000, 9000)))
+        try:
+            socket1.connect(('127.0.0.1', server))
+            threading.Thread(target=sending_data, args=(socket1,)).start()
+        except ConnectionRefusedError:
+            continue
+
+
+
+
