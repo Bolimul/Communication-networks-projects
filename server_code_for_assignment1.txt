@@ -1,0 +1,25 @@
+# Names of the students : Ilan Shklover, Nikita Solonets
+
+import socket
+
+users = {}
+UDP_IP = '0.0.0.0'
+UDP_PORT = 9999
+
+sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM,0)
+sock.bind((UDP_IP,UDP_PORT))
+
+while True:
+    names_users = users.keys()
+    addr_users = users.values()
+    data, addr = sock.recvfrom(1024)  # addr of sender
+    message = data.decode().split("_")  # The message contains name of the destination client and then the data.
+    if addr not in addr_users:
+        users.update({message[0]:addr})
+    else:
+        if message[0] not in names_users:
+            sock.sendto("Such user does not exist".encode(),addr)
+        else:
+            sock.sendto(data,users[message[0]])
+
+    print('received message:',data.decode())
